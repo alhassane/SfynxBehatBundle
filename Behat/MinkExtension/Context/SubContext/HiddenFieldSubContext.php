@@ -24,7 +24,7 @@ use Behat\Mink\Exception\ExpectationException;
 /**
  * Mink context for Behat BDD tool.
  * Provides Mink integration and base step definitions with additional options.
- * 
+ *
  * @category   Behat
  * @package    Mink
  * @subpackage SubContext
@@ -39,9 +39,9 @@ class HiddenFieldSubContext extends RawMinkContext
 {
     /**
      * @var string $browserName
-     */    
+     */
     protected $browserName;
-    
+
     /**
      * Initializes context.
      * Every scenario gets it's own context object.
@@ -68,7 +68,7 @@ class HiddenFieldSubContext extends RawMinkContext
             throw new ExpectationException($message, $this->getSession());
         }
     }
-    
+
     /**
      * Checks that form hidden field with specified id|name has specified value.
      *
@@ -84,14 +84,14 @@ class HiddenFieldSubContext extends RawMinkContext
             throw new ExpectationException($message, $this->getSession());
         }
     }
-    
+
     /**
      * @param string $field
      *
      * @return \Behat\Mink\Element\NodeElement|null
      * @throws \Behat\Mink\Exception\ElementNotFoundException
      */
-    private function findHiddenField($field)
+    protected function findHiddenField($field)
     {
         $node = $this->getSession()->getPage()->find(
             'xpath',
@@ -105,7 +105,7 @@ class HiddenFieldSubContext extends RawMinkContext
         }
         return $node;
     }
-    
+
 //    /**
 //     * Take screenshot when step fails.
 //     * Works only with Selenium2Driver.
@@ -126,5 +126,5 @@ class HiddenFieldSubContext extends RawMinkContext
 //            $filename = sprintf('%s_%s_%s_%s.%s', $event->getLogicalParent()->getTitle(), $this->browserName, date('YmdHis'), uniqid('', true), 'png');
 //            file_put_contents($directory . '/' . $filename, $driver->getScreenshot());
 //        }
-//    }  
+//    }
 }

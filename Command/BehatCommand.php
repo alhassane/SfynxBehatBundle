@@ -20,7 +20,7 @@ class BehatCommand extends ContainerAwareCommand
      * @var array $options
      */
     public static $options = array('server', 'locale');
-    
+
     /**
      * {@inheritdoc}
      */
@@ -34,7 +34,7 @@ The <info>sfynx:behat:execute</info> command to execute behat command
 
 An example of usage of the command:
 
-<info>./app/console sfynx:database:backup "my-connection-service-id" "/var/tmp" [my_sql_file_name.sql]</info>
+<info>./app/console sfynx:behat:execute</info>
 
 EOT
             );
@@ -59,19 +59,19 @@ EOT
                 MinkContext::$options[$option] = $input->getParameterOption('--'.$option);
             }
         }
-        $args = array();
+        $args = [];
         if ($input->hasParameterOption('--suite')) {
             $args['--suite'] = $input->getParameterOption('--suite');
         }
         $this->runBehatCommand($args);
     }
-    
+
     /**
      * Run behat original command
-     * 
+     *
      * @param array $args
      */
-    private function runBehatCommand(array $args = array())
+    protected function runBehatCommand(array $args = array())
     {
         define('BEHAT_BIN_PATH', $this->getContainer()->getParameter('kernel.root_dir').'/../bin/behat');
         function includeIfExists($file)

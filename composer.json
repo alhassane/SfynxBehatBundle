@@ -17,12 +17,10 @@
   ],
 
   "require": {
-    "symfony/framework-bundle": "~2.3|~3.0"
+    "symfony/framework-bundle": "~2.8|~3.0"
   },
 
   "require-dev": {
-    "symfony/phpunit-bridge": "~2.7|~3.0",
-    "phpunit/phpunit": "*"
   },
 
   "suggest": {
@@ -39,7 +37,7 @@
 
   "extra": {
     "branch-alias": {
-      "dev-master": "2.3-dev"
+      "dev-master": "2.x-dev"
     }
   }
 }

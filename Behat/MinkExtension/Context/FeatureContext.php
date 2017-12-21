@@ -57,17 +57,17 @@ class FeatureContext implements SnippetAcceptingContext
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
+    }
+    
+    /** @BeforeFeature */
+    public static function setupFeature(BeforeFeatureScope $scope)
+    {
         $environment = $scope->getEnvironment();
 
         $this->minkContext           = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\MinkContext');
         $this->ajaxsubcontext        = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\AjaxContext');
         $this->hiddenfieldsubcontext = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\HiddenFieldSubContext');
         $this->xpathxubcontext       = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\XpathSubContext');
-    }   
-    
-    /** @BeforeFeature */
-    public static function setupFeature(BeforeFeatureScope $scope)
-    {
     }
 
     /** @AfterFeature */

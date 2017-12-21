@@ -24,8 +24,9 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Behat\Mink\Exception\UnsupportedDriverActionException,
     Behat\Mink\Exception\ExpectationException;
 use Behat\Symfony2Extension\Driver\KernelDriver;
+use Behat\Mink\Driver\DriverInterface;
+use Behat\Mink\Exception\ResponseTextException;
 
-use Behat\Mink\Driver\BrowserKitDriver;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
@@ -43,7 +44,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
  * @link       http://opensource.org/licenses/gpl-license.php
  * @since      2015-03-02
  */
-class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, KernelAwareContext
+class MinkContext extends BaseMinkContext implements SnippetAcceptingContext,KernelAwareContext
 {
     /**
      * Behat additional options
@@ -52,6 +53,7 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
      */
     
     public static $options;
+
     /**
      * Allowed values for addtional options
      * 
@@ -64,7 +66,20 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
      * 
      * @var KernelInterface $kernel
      */
-    private $kernel;
+    protected $kernel;
+
+    /**
+     * Behat additional options initializer
+     */
+    public function __construct()
+    {
+        if (isset(self::$options['server']) &&
+            self::$options['locale']
+        ) {
+            exit;
+            $this->forTheServer(self::$options['server'], self::$options['locale']);
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -83,15 +98,32 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
             );
         }
     }
-    
+
     /**
-     * Behat additional options initializer
+     * Using a specific server and locale
+     *
+     * @Given /^for the server "(?P<server>(?:[^"]|\\")*)"(?:| with locale "(?P<locale>(?:[^"]|\\")*)")$/
      */
-    public function __construct() 
+    public function forTheServer($server = null, $locale = null)
     {
-        $this->forTheServer(self::$options['server'], self::$options['locale']);
+        if (count(self::$allowed) >= 1) {
+            if (!in_array($server, self::$allowed['servers']) && !empty($server)) {
+                throw new \Exception('Website server "'.$server.'" not found.');
+            } else {
+                $server = self::$options['server'];
+            }
+            if ($locale !== '' && !in_array($locale, self::$allowed['locales']) && !empty($locale)) {
+                throw new \Exception('Website locale "'.$locale.'" not found.');
+            } elseif ($locale == '') {
+                $locale = self::$options['locale'];
+            }
+
+            $baseUrl = 'http://'.strtolower($server);
+            $this->setMinkParameter('base_url', strtr($baseUrl, [' ', '']));
+        }
     }
     
+
     public function getSymfonyProfile()
     {
         $driver = $this->getSession()->getDriver();
@@ -131,7 +163,7 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
                 break;
         }
     }
-    
+
     /**
      * @When I wait for :time seconds
      */
@@ -150,30 +182,6 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
     public function fillFieldMist($field, $value)
     {
         $this->assertSession()->elementExists($field, $value)->click();
-    }
-    
-    /**
-     * Using a specific server and locale
-     * 
-     * @Given /^for the server "(?P<server>(?:[^"]|\\")*)"(?:| with locale "(?P<locale>(?:[^"]|\\")*)")$/
-     */
-    public function forTheServer($server = null, $locale = null)
-    {   
-        if (count(self::$allowed) >= 1) {
-            if (!in_array($server, self::$allowed['servers']) && !empty($server)) {
-                throw new \Exception('Website server "'.$server.'" not found.');
-            } else {
-                $server = self::$options['server'];
-            }
-            if ($locale !== '' && !in_array($locale, self::$allowed['locales']) && !empty($locale)) {
-                throw new \Exception('Website locale "'.$locale.'" not found.');
-            } elseif ($locale == '') {
-                $locale = self::$options['locale'];
-            }
-
-            $baseUrl = 'http://bitume.'.strtolower($server).'.dev';
-            $this->setMinkParameter('base_url', strtr($baseUrl, array(' ', '')));
-        }
     }
     
     /**
@@ -305,7 +313,49 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
         if ($title_css != $title) {
             throw new \Exception('Title "'.$title.'" not visible.');
         }
-    }     
+    }
+
+    /**
+     * Checks, that page contains specified text
+     * Example: Then I should see "Who is the Batman?" or "Who are Them?"
+     * Example: And I should see "Who is the Batman?" or "Who are Them?"
+     *
+     * @Then /^(?:|I )should see "(?P<text1>(?:[^"]|\\")*)" or "(?P<text2>(?:[^"]|\\")*)"$/
+     */
+    public function assertPageContainsTextOrText($text1, $text2)
+    {
+        $actual = $this->getSession()->getDriver()->getContent();
+        $actual = preg_replace('/\s+/u', ' ', $actual);
+        $regex1 = '/'.preg_quote($this->fixStepArgument($text1), '/').'/ui';
+        $regex2 = '/'.preg_quote($this->fixStepArgument($text2), '/').'/ui';
+        $message = sprintf('The text "%s" and "%s" was not found anywhere in the text of the current page.', $text1, $text2);
+
+        if ((bool) (preg_match($regex1, $actual) || preg_match($regex2, $actual))) {
+            return;
+        }
+        throw new ResponseTextException($message, $this->session->getDriver());
+    }
+
+    /**
+     * Checks, that page contains specified text
+     * Example: Then I should see "Who is the Batman?" or "Who are Them?"
+     * Example: And I should see "Who is the Batman?" or "Who are Them?"
+     *
+     * @Then /^(?:|I )should not see "(?P<text1>(?:[^"]|\\")*)" and "(?P<text2>(?:[^"]|\\")*)"$/
+     */
+    public function assertPageNoContainsTextOrText($text1, $text2)
+    {
+        $actual = $this->getSession()->getDriver()->getContent();
+        $actual = preg_replace('/\s+/u', ' ', $actual);
+        $regex1 = '/'.preg_quote($this->fixStepArgument($text1), '/').'/ui';
+        $regex2 = '/'.preg_quote($this->fixStepArgument($text2), '/').'/ui';
+        $message = sprintf('The text "%s" or "%s" appears in the text of this page, but it should not.', $text1, $text2);
+
+        if (!preg_match($regex1, $actual) && !preg_match($regex2, $actual)) {
+            return;
+        }
+        throw new ResponseTextException($message, $this->session->getDriver());
+    }
     
     /**
      * {@inheritdoc}
@@ -340,23 +390,18 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext, Ke
     public function iAmAuthenticatedAs($username)
     {
         $driver = $this->getSession()->getDriver();
-        if (!$driver instanceof BrowserKitDriver) {
-            throw new UnsupportedDriverActionException('This step is only supported by the BrowserKitDriver');
+        if (!$driver instanceof DriverInterface) {
+            throw new UnsupportedDriverActionException('This step is only supported by the DriverInterface');
         }
 
-        $client = $driver->getClient();
-        $client->getCookieJar()->set(new Cookie(session_name(), true));
-
-        $session = $client->getContainer()->get('session');
-
-        $user = $this->kernel->getContainer()->get('fos_user.user_manager')->findUserByUsername($username);
-        $providerKey = $this->kernel->getContainer()->getParameter('fos_user.firewall_name');
+        $user = $this->kernel->getContainer()->get('sfynx.auth.manager.user')->findUserByUsername($username);
+        $providerKey = $this->kernel->getContainer()->getParameter('sfynx.auth.firewall_name');
 
         $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
+        $session = $this->kernel->getContainer()->get('session');
         $session->set('_security_'.$providerKey, serialize($token));
         $session->save();
 
-        $cookie = new Cookie($session->getName(), $session->getId());
-        $client->getCookieJar()->set($cookie);
-    }    
+        $this->getSession()->setCookie($session->getName(), $session->getId());
+    }
 }
