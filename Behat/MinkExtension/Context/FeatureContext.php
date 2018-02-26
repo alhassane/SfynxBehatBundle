@@ -43,16 +43,16 @@ use Behat\Behat\Hook\Scope\AfterStepScope;
 class FeatureContext implements SnippetAcceptingContext        
 {
     /** @var \Behat\MinkExtension\Context\MinkContext */
-    private $minkContext;
+    protected $minkContext;
     
     /** @var \Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\AjaxContext */
-    private $ajaxsubcontext;   
+    protected $ajaxsubcontext;
     
     /** @var \Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\HiddenFieldSubContext */
-    private $hiddenfieldsubcontext;  
-        
+    protected $hiddenfieldsubcontext;
+
     /** @var \Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\XpathSubContext */
-    private $xpathxubcontext;  
+    protected $xpathxubcontext;
     
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
@@ -64,10 +64,18 @@ class FeatureContext implements SnippetAcceptingContext
     {
         $environment = $scope->getEnvironment();
 
-        $this->minkContext           = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\MinkContext');
-        $this->ajaxsubcontext        = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\AjaxContext');
-        $this->hiddenfieldsubcontext = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\HiddenFieldSubContext');
-        $this->xpathxubcontext       = $environment->getContext('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\XpathSubContext');
+        if ($environment->getSuite()->hasSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\MinkContext')) {
+            $this->minkContext = $environment->getSuite()->getSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\MinkContext');
+        }
+        if ($environment->getSuite()->hasSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\AjaxContext')) {
+            $this->ajaxsubcontext = $environment->getSuite()->getSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\AjaxContext');
+        }
+        if ($environment->getSuite()->hasSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\HiddenFieldSubContext')) {
+            $this->hiddenfieldsubcontext = $environment->getSuite()->getSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\HiddenFieldSubContext');
+        }
+        if ($environment->getSuite()->hasSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\XpathSubContext')) {
+            $this->xpathxubcontext = $environment->getSuite()->getSetting('Sfynx\BehatBundle\Behat\MinkExtension\Context\SubContext\XpathSubContext');
+        }
     }
 
     /** @AfterFeature */

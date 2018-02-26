@@ -76,7 +76,6 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext,Ker
         if (isset(self::$options['server']) &&
             self::$options['locale']
         ) {
-            exit;
             $this->forTheServer(self::$options['server'], self::$options['locale']);
         }
     }
@@ -97,6 +96,7 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext,Ker
                 'locales' => $container->getParameter('behat.locales')
             );
         }
+        $this->forTheServer(self::$options['server'], self::$options['locale']);
     }
 
     /**
@@ -303,7 +303,7 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext,Ker
     
     /**
      * Click on the element with the provided CSS Selector
-     * exemple: Given I click on the element with css selector "a#14"
+     * exemple: Given should have a title egal to "My Title"
      *
      * @Then /^(?:|I )should have a title egal to "(?P<title>(?:[^"]|\\")*)"$/
      */
@@ -338,8 +338,8 @@ class MinkContext extends BaseMinkContext implements SnippetAcceptingContext,Ker
 
     /**
      * Checks, that page contains specified text
-     * Example: Then I should see "Who is the Batman?" or "Who are Them?"
-     * Example: And I should see "Who is the Batman?" or "Who are Them?"
+     * Example: Then I should not see "Who is the Batman?" or "Who are Them?"
+     * Example: And I should not see "Who is the Batman?" or "Who are Them?"
      *
      * @Then /^(?:|I )should not see "(?P<text1>(?:[^"]|\\")*)" and "(?P<text2>(?:[^"]|\\")*)"$/
      */

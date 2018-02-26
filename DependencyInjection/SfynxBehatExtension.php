@@ -44,7 +44,7 @@ class SfynxBehatExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        //
+
         $container->setParameter('behat.servers', $config['servers']);
         $container->setParameter('behat.locales', $config['locales']);
         $container->setParameter('behat.options', $config['options']);

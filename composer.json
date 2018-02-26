@@ -4,7 +4,7 @@
   "description": "This Bundle provides context tools (WebApi, Ajax, Xpath, hidden field) to run mink tests.",
   "keywords": ["behat", "mink", "tests"],
   "homepage": "http://pigroupe.github.io/cmf-sfynx/",
-  "license": "LGPL-3.0+",
+  "license": "LGPL-3.0-or-latter",
   "authors": [
     {
       "name": "Etienne de Longeaux",
